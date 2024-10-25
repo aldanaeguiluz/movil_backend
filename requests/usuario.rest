@@ -1,0 +1,21 @@
+@baseUrl = http://192.168.1.22:4567/
+
+#############################################
+
+POST {{baseUrl}}usuario/validar 
+content-type: application/json
+
+{
+  "usuario": "20210109",
+  "contrasenia": "123"
+}
+
+#############################################
+POST {{baseUrl}}usuario/cambiar-contrasenia
+Content-Type: application/x-www-form-urlencoded
+
+correo=45954@aloe.ulima.edu.pe
+
+#############################################
+GET {{baseUrl}}seccion/alumno
+  ?alumno_d=1
