@@ -1,21 +1,27 @@
-@baseUrl = http://192.168.1.22:4567/
+@baseUrl = http://10.121.142.3:4567/
 
 #############################################
 
-POST {{baseUrl}}usuario/validar 
+POST {{baseUrl}}usuario/login
 content-type: application/json
 
 {
-  "usuario": "20210109",
-  "contrasenia": "123"
+    "correo": "juan.perez@example.com",
+    "contrasena": "1234pass"
 }
 
 #############################################
-POST {{baseUrl}}usuario/cambiar-contrasenia
-Content-Type: application/x-www-form-urlencoded
 
-correo=45954@aloe.ulima.edu.pe
+POST {{baseUrl}}usuario/validar
+content-type: application/json
+
+{
+    "correo": "maria.gomez@example.com"
+}
 
 #############################################
-GET {{baseUrl}}seccion/alumno
-  ?alumno_d=1
+
+POST {{baseUrl}}usuario/registro
+Content-Type: application/x-www-form-urlencoded
+
+nombres=Fermin&apellidos=Bernales&fecha_nacimiento=10/06/2000&correo=fermin.ber@example.com&celular=123456789&contrasena=1234pass&altura=1.70&peso=70&sexo=M&condiciones_medicas=Miopia
