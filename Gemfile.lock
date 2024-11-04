@@ -2,13 +2,17 @@ GEM
   remote: https://rubygems.org/
   specs:
     base64 (0.2.0)
+    bcrypt (3.1.20)
     bigdecimal (3.1.8)
     ffi (1.17.0-x64-mingw-ucrt)
+    json (2.7.6)
     listen (3.9.0)
       rb-fsevent (~> 0.10, >= 0.10.3)
       rb-inotify (~> 0.9, >= 0.9.10)
     mustermann (3.0.0)
       ruby2_keywords (~> 0.0.1)
+    postmark (1.25.1)
+      json
     rack (3.0.11)
     rack-protection (4.0.0)
       base64 (>= 0.1.0)
@@ -40,6 +44,8 @@ PLATFORMS
   x64-mingw-ucrt
 
 DEPENDENCIES
+  bcrypt
+  postmark
   rackup
   rerun
   sequel (~> 5.79.0)

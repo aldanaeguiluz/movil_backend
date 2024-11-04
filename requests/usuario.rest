@@ -1,4 +1,4 @@
-@baseUrl = http://10.64.53.121:4567/
+@baseUrl = http://10.121.142.3:4567/
 
 #############################################
 
@@ -6,8 +6,8 @@ POST {{baseUrl}}usuario/login
 content-type: application/json
 
 {
-    "correo": "juan.perez@example.com",
-    "contrasena": "1234pass"
+    "correo": "20210651@aloe.ulima.edu.pe",
+    "contrasena": "115fce857010198c"
 }
 
 #############################################
@@ -16,7 +16,7 @@ POST {{baseUrl}}usuario/validar
 content-type: application/json
 
 {
-    "correo": "maria.gomez@example.com"
+    "correo": "20210651@aloe.ulima.edu.pe"
 }
 
 #############################################
@@ -67,4 +67,7 @@ content-type: application/json
   "celular": 987123456,
   "otros": "Ninguno"
 }
+
+#############################################
+
 

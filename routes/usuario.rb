@@ -1,7 +1,12 @@
 require 'sinatra'
 require 'json'
+require 'securerandom'
+require 'postmark'
+require 'bcrypt'
 
+client = Postmark::ApiClient.new('api token')
 
+# ==========================================================================================
 
 # Para obtener todos los datos de usuario por id
 get '/usuario/:id' do
@@ -33,6 +38,8 @@ get '/usuario/:id' do
   status status
   return resp
 end
+
+# ==========================================================================================
 
 # Para actualizar datos de usuario por id
 put '/usuario/:id' do
@@ -95,9 +102,9 @@ put '/usuario/:id' do
   return resp
 end
 
+# ==========================================================================================
 
-
-
+# Para login
 # Para login
 post '/usuario/login' do
   body = request.body.read
@@ -106,68 +113,119 @@ post '/usuario/login' do
   correo = data['correo']
   contrasena = data['contrasena']
 
-  status 500
-  resp = ''
+  # Configuración de respuesta inicial
+  response = ''
 
   begin
-    record = Usuario.where(correo: correo, contrasena: contrasena).first
+    # Buscar el usuario por correo
+    record = Usuario.where(correo: correo).first
 
-    if record then
-      status 200
-      resp = record.to_json
+    if record
+      # decifrar contraseña
+      if BCrypt::Password.new(record.contrasena) == contrasena
+        # Contraseña correcta
+        status 200
+        resp = 'Login exitoso'
+      else
+        # Contraseña incorrecta
+        status 404
+        resp = 'Correo y/o contraseña incorrectos'
+      end
     else
+      # Usuario no encontrado
       status 404
       resp = 'Correo y/o contraseña incorrectos'
     end
-    rescue Sequel::DatabaseError => e
-      status = 500
-      resp = 'Error al acceder a la base de datos'
-      puts e.message
-    rescue StandardError => e
-      status = 500
-      resp = 'Ocurrió un error no esperado al validar el usuario'
-      puts e.message
-    end
+
+  rescue BCrypt::Errors::InvalidHash
+    # Error si `record.contrasena` no es un hash válido de BCrypt
+    puts "Error: la contraseña almacenada no es un hash válido de BCrypt."
+    status 500
+    resp = 'Error en el sistema de contraseñas. Contacte soporte.'
+
+  rescue Sequel::DatabaseError => e
+    # Error de base de datos
+    puts "Error al acceder a la base de datos: #{e.message}"
+    status 500
+    resp = 'Error al acceder a la base de datos'
+
+  rescue StandardError => e
+    # Otro error inesperado
+    puts "Ocurrió un error inesperado: #{e.message}"
+    status 500
+    resp = 'Ocurrió un error inesperado al validar el usuario'
+  end
 
   status status
   return resp
 end
 
+# ==========================================================================================
 
 # Para recuperar contraseña
 post '/usuario/validar' do
   body = request.body.read
   data = JSON.parse(body)
-
   correo = data['correo']
 
-  status 500
   resp = ''
 
   begin
+    # Buscar el usuario por correo
     record = Usuario.where(correo: correo).first
 
-    if record then
-      status 200
-      resp = 'Correo encontrado'
-      # logica de postmark
+    if record
+      # Generar nueva contraseña temporal
+      nueva_contrasena = SecureRandom.hex(8)
+      record.update(contrasena: BCrypt::Password.create(nueva_contrasena))
+      puts "Contraseña temporal generada: #{nueva_contrasena}"
+
+      # Enviar correo con Postmark
+      begin
+        client.deliver_with_template(
+          from: '20210651@aloe.ulima.edu.pe',
+          to: correo,
+          template_alias: 'recuperar_contrasena',
+          template_model: {
+            nueva_contrasena: nueva_contrasena,
+            nombres: record.nombres,
+            product_name: 'MediPlan+',
+            company_name: 'MediPlan+ Corp.',
+            company_address: ''
+          }
+        )
+        puts 'Correo enviado exitosamente'
+        status 200
+        resp = 'Correo enviado con nueva contraseña'
+
+      rescue Postmark::Error => e
+        puts "Error al enviar correo: #{e.message}"
+        status 500
+        resp = 'Error al enviar el correo'
+      end
+
     else
+      puts 'Correo no encontrado en la base de datos'
       status 404
       resp = 'Correo no encontrado'
     end
-    rescue Sequel::DatabaseError => e
-      status = 500
-      resp = 'Error al acceder a la base de datos'
-      puts e.message
-    rescue StandardError => e
-      status = 500
-      resp = 'Ocurrió un error no esperado al validar el usuario'
-      puts e.message
-    end
 
-    status status
-    return resp
+  rescue Sequel::DatabaseError => e
+    puts "Error al acceder a la base de datos: #{e.message}"
+    status 500
+    resp = 'Error al acceder a la base de datos'
+
+  rescue StandardError => e
+    puts "Ocurrió un error inesperado: #{e.message}"
+    status 500
+    resp = 'Ocurrió un error inesperado al validar el usuario'
+  end
+
+  status status
+  return resp
 end
+
+# ==========================================================================================
 
 post '/usuario/registro' do
   content_type :json
@@ -209,6 +267,9 @@ post '/usuario/registro' do
           status = 400
           resp = 'La fecha de nacimiento no está en el formato correcto (dd/mm/yyyy)'
         else
+          # encriptar la contraseña
+          hashed_password = BCrypt::Password.create(contrasena)
+          
           # Crear el usuario en la base de datos con campos opcionales
           begin
             usuario = Usuario.create(
@@ -216,7 +277,7 @@ post '/usuario/registro' do
               apellidos: apellidos,
               fecha_nacimiento: fecha_nacimiento,
               correo: correo,
-              contrasena: contrasena,
+              contrasena: hashed_password,
               celular: celular,
               altura: altura.nil? || altura.empty? ? nil : altura,
               peso: peso.nil? || peso.empty? ? nil : peso,
@@ -244,3 +305,43 @@ post '/usuario/registro' do
   status status
   return resp
 end
+
+# ==========================================================================================
+
+post '/usuario/actualizar_correo' do
+  data = JSON.parse(request.body.read)
+  correo = data['correo']
+  nuevo_correo = '20210651@aloe.ulima.edu.pe'
+
+  resp = ''
+  
+  begin
+    # Buscar el usuario por correo
+    record = Usuario.where(correo: correo).first
+
+    if record
+      # Actualizar el correo
+      record.update(correo: nuevo_correo)
+      status 200
+      resp = 'Correo actualizado con éxito'
+    else
+      # Usuario no encontrado
+      status 404
+      resp = 'No se encontró el correo'
+    end
+  rescue Sequel::DatabaseError => e
+    # Error de base de datos
+    status 500
+    resp = 'Error al acceder a la base de datos'
+    puts e.message
+  rescue StandardError => e
+    # Otro tipo de error
+    status 500
+    resp = 'Ocurrió un error no esperado al validar el usuario'
+    puts e.message
+  end
+
+  # Devolver la respuesta
+  resp
+end
+
