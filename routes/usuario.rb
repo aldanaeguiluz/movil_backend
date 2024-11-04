@@ -1,6 +1,103 @@
 require 'sinatra'
 require 'json'
 
+
+
+# Para obtener todos los datos de usuario por id
+get '/usuario/:id' do
+  id = params['id']
+
+  status 500
+  resp = ''
+
+  begin
+    record = Usuario.where(id: id).first
+
+    if record then
+      status 200
+      resp = record.to_json
+    else
+      status 404
+      resp = 'Usuario no encontrado'
+    end
+    rescue Sequel::DatabaseError => e
+      status = 500
+      resp = 'Error al acceder a la base de datos'
+      puts e.message
+    rescue StandardError => e
+      status = 500
+      resp = 'Ocurrió un error no esperado al validar el usuario'
+      puts e.message
+    end
+
+  status status
+  return resp
+end
+
+# Para actualizar datos de usuario por id
+put '/usuario/:id' do
+  id = params['id']
+  body = request.body.read
+  data = JSON.parse(body)
+
+  nombres = data['nombres']
+  apellidos = data['apellidos']
+  fecha_nacimiento = data['fecha_nacimiento']
+  correo = data['correo']
+  celular = data['celular']
+  contrasena = data['contrasena']
+  altura = data['altura']
+  peso = data['peso']
+  sexo = data['sexo']
+  condiciones_medicas = data['condiciones_medicas']
+  alergias = data['alergias']
+  otros = data['otros']
+
+  status 500
+  resp = ''
+
+  begin
+    record = Usuario.where(id: id).first
+
+    if record then
+      record.update(
+        nombres: nombres,
+        apellidos: apellidos,
+        fecha_nacimiento: fecha_nacimiento,
+        correo: correo,
+        celular: celular,
+        contrasena: contrasena,
+        altura: altura,
+        peso: peso,
+        sexo: sexo,
+        condiciones_medicas: condiciones_medicas,
+        alergias: alergias,
+        otros: otros
+      )
+
+      status 200
+      resp = 'Usuario actualizado exitosamente'
+    else
+      status 404
+      resp = 'Usuario no encontrado'
+    end
+    rescue Sequel::DatabaseError => e
+      status = 500
+      resp = 'Error al acceder a la base de datos'
+      puts e.message
+    rescue StandardError => e
+      status = 500
+      resp = 'Ocurrió un error no esperado al validar el usuario'
+      puts e.message
+    end
+
+  status status
+  return resp
+end
+
+
+
+
 # Para login
 post '/usuario/login' do
   body = request.body.read
@@ -12,7 +109,7 @@ post '/usuario/login' do
   status 500
   resp = ''
 
-  begin 
+  begin
     record = Usuario.where(correo: correo, contrasena: contrasena).first
 
     if record then
@@ -47,7 +144,7 @@ post '/usuario/validar' do
   status 500
   resp = ''
 
-  begin 
+  begin
     record = Usuario.where(correo: correo).first
 
     if record then

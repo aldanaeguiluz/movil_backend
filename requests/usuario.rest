@@ -1,4 +1,4 @@
-@baseUrl = http://10.121.142.3:4567/
+@baseUrl = http://10.64.53.121:4567/
 
 #############################################
 
@@ -24,4 +24,47 @@ content-type: application/json
 POST {{baseUrl}}usuario/registro
 Content-Type: application/x-www-form-urlencoded
 
-nombres=Fermin&apellidos=Bernales&fecha_nacimiento=10/06/2000&correo=fermin.ber@example.com&celular=123456789&contrasena=1234pass&altura=1.70&peso=70&sexo=M&condiciones_medicas=Miopia
+nombres=Fermin&apellidos=Bernales&fecha_nacimiento=10/06/2000&correo=fermin.ber@example.com&celular=123456789&contrasena=1234pass&altura=1.70&peso=70&sexo=M&condiciones_medicas=Miopia1
+
+
+#############################################
+GET {{baseUrl}}usuario/2
+#############################################
+PUT {{baseUrl}}usuario/2
+content-type: application/json
+
+{
+    "nombres": "Fermin",
+    "apellidos": "Bernales",
+    "fecha_nacimiento": "10/06/2000",
+    "correo": "hola@mail.com",
+    "celular": "123456789",
+    "contrasena": "1234pass",
+    "altura": 1.70,
+    "peso": 70.0,
+    "sexo": "M",
+    "condiciones_medicas": "Miopia1",
+    "alergias": "A",
+    "otros": "O"
+}
+
+
+#############################################
+PUT {{baseUrl}}usuario/2
+content-type: application/json
+
+{
+  "nombres": "María",
+  "apellidos": "Gómez",
+  "fecha_nacimiento": "1985-08-20",
+  "correo": "maria.gomez@example.com",
+  "contrasena": "abcd1234",
+  "altura": 1.65,
+  "peso": 60.0,
+  "sexo": "F",
+  "condiciones_medicas": "Hipertensión",
+  "alergias": "Gluten",
+  "celular": 987123456,
+  "otros": "Ninguno"
+}
+
