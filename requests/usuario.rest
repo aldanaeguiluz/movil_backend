@@ -1,4 +1,4 @@
-@baseUrl = http://10.121.142.3:4567/
+@baseUrl = http://10.64.53.121:4567/
 
 #############################################
 
@@ -7,7 +7,7 @@ content-type: application/json
 
 {
     "correo": "20210651@aloe.ulima.edu.pe",
-    "contrasena": "115fce857010198c"
+    "contrasena": "d5069f94aa9cec3f"
 }
 
 #############################################

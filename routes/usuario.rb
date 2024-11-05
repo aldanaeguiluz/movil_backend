@@ -4,7 +4,7 @@ require 'securerandom'
 require 'postmark'
 require 'bcrypt'
 
-client = Postmark::ApiClient.new('api token')
+client = Postmark::ApiClient.new('e83f9e61-0c0d-457e-a091-ed7b84d0fb86')
 
 # ==========================================================================================
 
@@ -125,7 +125,7 @@ post '/usuario/login' do
       if BCrypt::Password.new(record.contrasena) == contrasena
         # Contraseña correcta
         status 200
-        resp = 'Login exitoso'
+        resp = record.id.to_json
       else
         # Contraseña incorrecta
         status 404
@@ -269,7 +269,7 @@ post '/usuario/registro' do
         else
           # encriptar la contraseña
           hashed_password = BCrypt::Password.create(contrasena)
-          
+
           # Crear el usuario en la base de datos con campos opcionales
           begin
             usuario = Usuario.create(
@@ -314,7 +314,7 @@ post '/usuario/actualizar_correo' do
   nuevo_correo = '20210651@aloe.ulima.edu.pe'
 
   resp = ''
-  
+
   begin
     # Buscar el usuario por correo
     record = Usuario.where(correo: correo).first
@@ -344,4 +344,3 @@ post '/usuario/actualizar_correo' do
   # Devolver la respuesta
   resp
 end
-
